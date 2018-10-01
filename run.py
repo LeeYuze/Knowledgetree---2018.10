@@ -9,7 +9,9 @@ base_url = "https://www.zhihuishu.com/"
 browser = webdriver.Chrome(executable_path='chromedriver.exe')
 browser.get(base_url)
 wait = WebDriverWait(browser,10)
-
+voice_if = False
+speed_if = False
+ok_if = False
 
 def login(username,password):
     try:
@@ -29,6 +31,10 @@ def login(username,password):
                 login(username, password)
             else:
                 print('请输入密码！')
+                username = input('username:')
+                password = input('password:')
+                if password:
+                    login(username, password)
         wait.until(EC.text_to_be_present_in_element((By.CSS_SELECTOR,'#myBody > div.mainBox.clearfix > div.schoolLeft.fl > div.userInfoBox > div.identitySelBox.clearfix > span'),'这里是学生端'))
         study()
     except NoSuchElementException as msg:
@@ -53,123 +59,137 @@ def study():
         print('查找元素异常%s'%msg)
 
 def cancel():
+    global ok_if
     while True:
+        get_time()
         try:
             browser.find_element_by_class_name('popbtn_yes').click()
-            time.sleep(2)
-            browser.find_element_by_class_name('popboxes_close').click()
-            time.sleep(2)
-            browser.find_element_by_class_name('popup_delete').click()
-            time.sleep(6)
-            speed_voice_config()
         except Exception:
-            time.sleep(2)
             try:
                 browser.find_element_by_class_name('popboxes_close').click()
                 print('成功跳过题目测试')
-            except  Exception:
+            except Exception:
                 pass
-            get_time()
+            pass
+
+        try:
+            browser.find_element_by_class_name('popup_delete').click()
+            ok_if = True
+        except Exception:
+            try:
+                browser.find_element_by_class_name('popboxes_close').click()
+                print('成功跳过题目测试')
+            except Exception:
+                pass
             pass
 
 a = []
 b = 0
 def get_time():
-    global b
-    global voice_if
-    global speed_if
-    content = browser.find_element_by_class_name('progressbar')
-    reselt = content.get_attribute('style')
-    title = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,'#lessonOrder'))).text
-    time.sleep(3)
-    if reselt:
-        if voice_if == False:
-            try:
-                browser.find_element_by_class_name('popboxes_close').click()
-                print('成功跳过题目测试')
-            except  Exception:
-                pass
-            voice()
+    global ok_if
+    if ok_if == True:
+        global b
+        global voice_if
+        global speed_if
+        content = browser.find_element_by_class_name('progressbar')
+        reselt = content.get_attribute('style')
+        title = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,'#lessonOrder'))).text
+        time.sleep(3)
 
-        if speed_if == False:
+        if reselt == 'width: 100%;':
             try:
-                browser.find_element_by_class_name('popboxes_close').click()
-                print('成功跳过题目测试')
-            except  Exception:
-                pass
-            speed()
+                voice_if = False
+                speed_if = False
+                browser.find_element_by_class_name('next_lesson_bg').click()
+                print('进行下一节课')
+            except Exception:
+                print('似乎已经撸完所有视频啦~小C就告退了~')
+                browser.quit()
 
-        if len(a) < 3:
-            a.append(reselt)
-            if len(a) > 1:
-                if a[1] != a[0]:
-                    a.remove(a[0])
-                    print(title,' - ',str(reselt).replace('width', '正在播放'))
-                    b = 0
-                elif a[1] == a[0]:
-                    a.remove(a[0])
-                    b +=1
-                    print('正在尝试第%s次,重新连接'%b)
-                    if b == 5:
+
+
+        if reselt:
+            if voice_if == False:
+                try:
+                    browser.find_element_by_class_name('popboxes_close').click()
+                    print('成功跳过题目测试')
+                except  Exception:
+                    pass
+                voice()
+
+            if speed_if == False:
+                try:
+                    browser.find_element_by_class_name('popboxes_close').click()
+                    print('成功跳过题目测试')
+                except  Exception:
+                    pass
+                speed()
+
+            time.sleep(2)
+
+            if len(a) < 3:
+                a.append(reselt)
+                if len(a) > 1:
+                    if a[1] != a[0]:
+                        a.remove(a[0])
+                        print(title,' - ',str(reselt).replace('width', '正在播放'))
                         b = 0
-                        print('第%s次重新连接失败，小C开始刷新'%b)
-                        browser.refresh()
-                        time.sleep(10)
-                        voice_if = False
-                        speed_if = False
-                        cancel()
+                    elif a[1] == a[0]:
+                        a.remove(a[0])
+                        b +=1
+                        print('正在尝试第%s次,重新连接'%b)
+                        if b == 5:
+                            b = 0
+                            print('第5次重新连接失败，小C开始刷新'%b)
+                            browser.refresh()
+                            time.sleep(10)
+                            voice_if = False
+                            speed_if = False
+                            cancel()
 
 
 
-    if reselt == 'width: 100%;':
-        try:
-            voice_if = False
-            speed_if = False
-            browser.find_element_by_class_name('next_lesson_bg').click()
-            print('进行下一节课')
-        except Exception:
-            print('似乎已经撸完所有视频啦~小C就告退了~')
-            browser.quit()
-
-voice_if = False
 def voice():
     global voice_if
-    try:
-        mouse = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "#vjs_mediaplayer > div.videoArea")))
-        ActionChains(browser).move_to_element(mouse).perform()
-        browser.find_element_by_xpath('//*[@id="vjs_mediaplayer"]/div[10]/div[8]/div[1]').click() #静音''
-        time.sleep(1)
-        print('嘘嘘~静音啦')
-        voice_if = True
-    except Exception:
-        print('静音失败')
-        voice_if = False
-        pass
+    if voice_if == False:
+        try:
+            mouse = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "#vjs_mediaplayer > div.videoArea")))
+            ActionChains(browser).move_to_element(mouse).perform()
+            browser.find_element_by_xpath('//*[@id="vjs_mediaplayer"]/div[10]/div[8]/div[1]').click() #静音''
+            time.sleep(1)
+            voice_if = True
+            time.sleep(1)
+            print('嘘嘘~静音啦')
+        except Exception:
+            print('静音失败')
+            pass
 
-speed_if = False
+
 def speed():
     global  speed_if
-    try:
-        mouse = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "#vjs_mediaplayer > div.videoArea.container")))
-        ActionChains(browser).move_to_element(mouse).perform()
-        mouse2 = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "#vjs_mediaplayer > div.controlsBar > div.speedBox")))
-        ActionChains(browser).move_to_element(mouse2).perform()
-        browser.find_element_by_xpath('//*[@id="vjs_mediaplayer"]/div[10]/div[5]/div/div[3]').click()  # 1.5倍速
-        print('1.5倍速观看中~')
-        speed_if = True
-    except Exception:
-        print('1.5倍启动失败，小C已经汇报原因')
-        speed_if = False
-        pass
-
+    if speed_if == False:
+        try:
+            mouse = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "#vjs_mediaplayer > div.videoArea.container")))
+            ActionChains(browser).move_to_element(mouse).perform()
+            mouse2 = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "#vjs_mediaplayer > div.controlsBar > div.speedBox")))
+            ActionChains(browser).move_to_element(mouse2).perform()
+            browser.find_element_by_xpath('//*[@id="vjs_mediaplayer"]/div[10]/div[5]/div/div[3]').click()  # 1.5倍速
+            time.sleep(1)
+            speed_if = True
+            time.sleep(1)
+            print('1.5倍速观看中~')
+        except Exception:
+            print('1.5倍启动失败，小C已经汇报原因')
+            pass
+'''
 def speed_voice_config():
     voice()
     time.sleep(2)
     speed()
-
+'''
 def mian():
     print('=======这里是最不智能的小C智能看视频小程序=======')
     print('=(#^.^#)=')
@@ -180,6 +200,10 @@ def mian():
         login(username,password)
     else:
         print('请输入密码！')
+        username = input('username:')
+        password = input('password:')
+        if password:
+            login(username, password)
 
 
 if __name__ == '__main__':
