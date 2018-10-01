@@ -99,9 +99,7 @@ def get_time():
         except Exception:
             print('似乎已经撸完所有视频啦~小C就告退了~')
 
-
-
-def speed_voice_config():
+def voice():
     try:
         mouse = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#vjs_mediaplayer > div.videoArea")))
@@ -111,10 +109,10 @@ def speed_voice_config():
         print('嘘嘘~静音啦')
     except Exception:
         print('静音失败')
-        speed_voice_config()
+        voice()
         pass
 
-    time.sleep(2)
+def speed():
     try:
         mouse = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#vjs_mediaplayer > div.videoArea.container")))
@@ -126,9 +124,13 @@ def speed_voice_config():
         print('1.5倍速观看中~')
     except Exception:
         print('1.5倍启动失败，小C已经汇报原因')
-        speed_voice_config()
+        speed()
         pass
 
+def speed_voice_config():
+    voice()
+    time.sleep(2)
+    speed()
 
 def mian():
     print('=======这里是最不智能的小C智能看视频小程序=======')
