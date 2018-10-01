@@ -86,6 +86,7 @@ def get_time():
                         browser.refresh()
                         time.sleep(10)
                         speed_voice_config()
+                        cancel()
                         b = 0
 
 
