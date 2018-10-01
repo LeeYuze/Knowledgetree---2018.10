@@ -19,8 +19,17 @@ def login(username,password):
         password_input = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '#lPassword')))
         password_input.send_keys(password)
         login_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR,'#f_sign_up > div > span'))).click()
+        time.sleep(1)
+        if browser.current_url == 'https://passport.zhihuishu.com/login?service=http://online.zhihuishu.com/onlineSchool/':
+            print('噢噢噢，(●￣(ｴ)￣●)，账号密码输错了...')
+            browser.get(base_url)
+            username = input('username:')
+            password = input('password:')
+            if password:
+                login(username, password)
+            else:
+                print('请输入密码！')
         wait.until(EC.text_to_be_present_in_element((By.CSS_SELECTOR,'#myBody > div.mainBox.clearfix > div.schoolLeft.fl > div.userInfoBox > div.identitySelBox.clearfix > span'),'这里是学生端'))
-        print('登录%s成功！' % username)
         study()
     except NoSuchElementException as msg:
         print('查找元素异常%s'%msg)
@@ -99,6 +108,7 @@ def get_time():
             speed_voice_config()
         except Exception:
             print('似乎已经撸完所有视频啦~小C就告退了~')
+            browser.quit()
 
 def voice():
     try:
