@@ -76,11 +76,29 @@ a = []
 b = 0
 def get_time():
     global b
+    global voice_if
+    global speed_if
     content = browser.find_element_by_class_name('progressbar')
     reselt = content.get_attribute('style')
     title = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,'#lessonOrder'))).text
     time.sleep(3)
     if reselt:
+        if voice_if == False:
+            try:
+                browser.find_element_by_class_name('popboxes_close').click()
+                print('成功跳过题目测试')
+            except  Exception:
+                pass
+            voice()
+
+        if speed_if == False:
+            try:
+                browser.find_element_by_class_name('popboxes_close').click()
+                print('成功跳过题目测试')
+            except  Exception:
+                pass
+            speed()
+
         if len(a) < 3:
             a.append(reselt)
             if len(a) > 1:
@@ -93,26 +111,29 @@ def get_time():
                     b +=1
                     print('正在尝试第%s次,重新连接'%b)
                     if b == 5:
+                        b = 0
                         print('第%s次重新连接失败，小C开始刷新'%b)
                         browser.refresh()
                         time.sleep(10)
-                        speed_voice_config()
+                        voice_if = False
+                        speed_if = False
                         cancel()
-                        b = 0
 
 
 
     if reselt == 'width: 100%;':
         try:
+            voice_if = False
+            speed_if = False
             browser.find_element_by_class_name('next_lesson_bg').click()
             print('进行下一节课')
-            time.sleep(5)
-            speed_voice_config()
         except Exception:
             print('似乎已经撸完所有视频啦~小C就告退了~')
             browser.quit()
 
+voice_if = False
 def voice():
+    global voice_if
     try:
         mouse = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#vjs_mediaplayer > div.videoArea")))
@@ -120,13 +141,15 @@ def voice():
         browser.find_element_by_xpath('//*[@id="vjs_mediaplayer"]/div[10]/div[8]/div[1]').click() #静音''
         time.sleep(1)
         print('嘘嘘~静音啦')
+        voice_if = True
     except Exception:
         print('静音失败')
-        cancel()
-        voice()
+        voice_if = False
         pass
 
+speed_if = False
 def speed():
+    global  speed_if
     try:
         mouse = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#vjs_mediaplayer > div.videoArea.container")))
@@ -136,10 +159,10 @@ def speed():
         ActionChains(browser).move_to_element(mouse2).perform()
         browser.find_element_by_xpath('//*[@id="vjs_mediaplayer"]/div[10]/div[5]/div/div[3]').click()  # 1.5倍速
         print('1.5倍速观看中~')
+        speed_if = True
     except Exception:
         print('1.5倍启动失败，小C已经汇报原因')
-        cancel()
-        speed()
+        speed_if = False
         pass
 
 def speed_voice_config():
