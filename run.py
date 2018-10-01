@@ -87,10 +87,10 @@ a = []
 b = 0
 def get_time():
     global ok_if
+    global b
+    global voice_if
+    global speed_if
     if ok_if == True:
-        global b
-        global voice_if
-        global speed_if
         content = browser.find_element_by_class_name('progressbar')
         reselt = content.get_attribute('style')
         title = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,'#lessonOrder'))).text
@@ -115,6 +115,7 @@ def get_time():
                     print('成功跳过题目测试')
                 except  Exception:
                     pass
+                time.sleep(5)
                 voice()
 
             if speed_if == False:
@@ -123,6 +124,7 @@ def get_time():
                     print('成功跳过题目测试')
                 except  Exception:
                     pass
+                time.sleep(5)
                 speed()
 
             time.sleep(2)
@@ -140,12 +142,11 @@ def get_time():
                         print('正在尝试第%s次,重新连接'%b)
                         if b == 5:
                             b = 0
-                            print('第5次重新连接失败，小C开始刷新'%b)
+                            print('第5次重新连接失败，小C开始刷新')
                             browser.refresh()
-                            time.sleep(10)
+                            time.sleep(6)
                             voice_if = False
                             speed_if = False
-                            cancel()
 
 
 
@@ -160,7 +161,7 @@ def voice():
             time.sleep(1)
             voice_if = True
             time.sleep(1)
-            print('嘘嘘~静音啦')
+            print('嘘嘘~静音啦~~')
         except Exception:
             print('静音失败')
             pass
