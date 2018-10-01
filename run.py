@@ -57,8 +57,10 @@ def cancel():
         try:
             browser.find_element_by_class_name('popbtn_yes').click()
             time.sleep(2)
+            browser.find_element_by_class_name('popboxes_close').click()
+            time.sleep(2)
             browser.find_element_by_class_name('popup_delete').click()
-            time.sleep(10)
+            time.sleep(6)
             speed_voice_config()
         except Exception:
             time.sleep(2)
@@ -120,6 +122,7 @@ def voice():
         print('嘘嘘~静音啦')
     except Exception:
         print('静音失败')
+        cancel()
         voice()
         pass
 
@@ -135,6 +138,7 @@ def speed():
         print('1.5倍速观看中~')
     except Exception:
         print('1.5倍启动失败，小C已经汇报原因')
+        cancel()
         speed()
         pass
 
